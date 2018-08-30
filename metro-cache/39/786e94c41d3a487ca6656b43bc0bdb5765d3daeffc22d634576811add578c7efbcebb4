@@ -1,0 +1,1 @@
+{"dependencies":[{"name":"./ApiUrls","isAsync":false}],"output":[{"data":{"code":"__d(function (global, _$$_REQUIRE, module, exports, _dependencyMap) {\n  var _ApiUrls = _$$_REQUIRE(_dependencyMap[0], \"./ApiUrls\");\n});","map":[[2,0,2,0]]},"type":"js/module"}]}
