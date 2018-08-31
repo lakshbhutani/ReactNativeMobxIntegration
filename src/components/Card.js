@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { Text, View, ScrollView, Linking, Image, StyleSheet,FlatList} from 'react-native';
+import { Text, View, ScrollView,ActivityIndicator, Image, StyleSheet,FlatList,SearchBar,AsyncStorage} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import {getUserList} from '../settings/ApiUrls';
+
 const feedData = [
     {
       key: 1,
@@ -67,33 +69,97 @@ const feedData = [
   ];
 
   export default class Card extends Component {
-    // static navigationOptions = {
-    //     title: 'List'
-    // }
-    render() {
+    state = {
+        userCheckList : [],
+        isLoading: true,
+        pageNumber: 1,
+    };
+    constructor(props){
+        super(props);
+        this.getUserList();
+    }
+    componentWillMount(){
+        this.retrieveStorageData();
+    }
+    retrieveStorageData = async () => {
+        try {
+            console.log('hello');
+            const value = await AsyncStorage.getItem('userInfo');
+            // console.log()
+            console.log("Got Token Value",value);
+          if (value!=null) {
+            // We have data!!
+            console.log(value.token);
+          }
+         } catch (error) {
+             console.log('error');
+           // Error retrieving data
+         }
+    }
+    getUserList = async() => {
+            try {
+              let response = await fetch(getUserList+"/0/"+ this.state.pageNumber+"/10", {
+                method: 'GET',
+                headers: {
+                'x-access-token':"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imxha3NoQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJhJDEwJDNvVkF6cHpPNmpMTE9QVEg0TkxNVHVMSjFGcld6UGthbDRaVXk3dDRLVkRkd243Rkp3NFVtIiwiaWF0IjoxNTM1NzAyMDY2LCJleHAiOjE1MzU3ODg0NjZ9.ofSqNc9G7JT3Hsl6RkT411bmVt8YQkKVI0f5w4WK3TQ"
+                }
+            });
+              let responseJson = await response.json();
+                // this.userCheckList = responseJson.message.results;
+                this.setState({userCheckList:this.state.userCheckList.concat(responseJson.message.results),
+                    isLoading: false
+                });
+                console.log(responseJson.message.results);
+              return responseJson.message.results;
+            } catch (error) {
+              console.error(error);
+            }
+    }
+    renderHeader = () => {
         return (
-            <ScrollView contentContainerStyle={styles.scrollViewStyle}>
+            <View style= {styles.cardListingHeader}>
+                <Text></Text>
+                <Text style= {styles.headerContent}>User List</Text>
+                <Text style ={styles.headerContent}>Laksh</Text>
+            </View>
+        )
+      };
+    render() {
+        if(this.state.isLoading){
+            return(
+                <View style={{flex: 1, justifyContent: 'center'}}>
+                    <ActivityIndicator size="large" color="#0000ff" />
+                </View>
+            )      
+        }
+        else {
+            return (
+                // <ScrollView styles={styles.scrollViewStyles}>
                     <FlatList
-                        data={feedData}
-                        renderItem={({ item })=>(
-                        <View>
-                            <View style={styles.cardHeader}>
-                                <Image style={styles.cardImage} source={item.imageUrl} />
-                                <Text style={styles.cardText}>{item.name}{"\n"}@Instagram</Text>
-                                <Text style={styles.cardHeaderDetails}>{item.lastSeen} minutes ago{"\n"}in {item.location}</Text>
-                                <Icon name='location-on' style={styles.locationIcon} />
+                            data={this.state.userCheckList}
+                            onEndReachedThreshold = {0.7}
+                            onEndReached={({ distanceFromEnd }) => {
+                                this.setState({pageNumber: ++this.state.pageNumber})
+                                this.getUserList()
+                            }}
+                            ListHeaderComponent={this.renderHeader}
+                            renderItem={({ item })=>(
+                            <View style={styles.listItemStyle}>
+                                <View style={styles.cardHeader}>
+                                    <Image style={styles.cardImage} 
+                                    source={{uri:item.picture.medium}}/>
+                                    <Text style={styles.cardText}>{item.name.first}{item.name.last}{"\n"}@Instagram</Text>
+                                    <Text style={styles.cardHeaderDetails}>{item.lastSeen} minutes ago{"\n"}in {item.location.state}</Text>
+                                    <Icon name='location-on' style={styles.locationIcon} />
+                                </View>
                             </View>
-                            <Image style={styles.cardBodyImage} source={item.uri} />
-                            <View style={styles.cardFooter}>
-                                <Text style={styles.cardBodyText}>This Park is favourite among skaters in California and it definitely deserves it.
-                                The Park is complete with plenty of smooth banks to.</Text>
-                                <Icon name='arrow-forward' style={styles.arrowIcon} />
-                            </View>  
-                        </View>
-                    )}
-                    />    
-            </ScrollView>
-        );
+                        )}
+                    />
+                // </ScrollView>
+                        
+            );
+        }
+        
     }
 }
 const styles = StyleSheet.create({
@@ -136,9 +202,10 @@ const styles = StyleSheet.create({
         borderBottomWidth: 4,
         borderBottomColor: '#E6E8EA'
     },
-    scrollViewStyle:{
+    scrollViewStyles:{
         paddingTop: 10,
-        paddingBottom: 100
+        paddingBottom: 100,
+        // marginBottom: 5
     },
     arrowIcon: {
         opacity: 0.4,
@@ -152,4 +219,35 @@ const styles = StyleSheet.create({
         width: 26,
         height: 26,
       },
+    listItemStyle: {
+        paddingTop: 5,
+        paddingBottom: 5,
+        marginTop: 5,
+        marginBottom :5,
+        backgroundColor: '#fff',
+        borderWidth: 2,
+        borderRadius: 2,
+        borderColor: '#ddd',
+        shadowColor: 'yellow',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 2,
+        elevation: 1,
+        
+    },
+    cardListingHeader: {
+        flexDirection : 'row',
+        flex: 1,
+        backgroundColor: '#E67263',
+        paddingTop: 15,
+        paddingBottom: 15,
+        justifyContent: 'space-between',
+        marginBottom: 5,
+        paddingLeft: 10,
+        paddingRight: 10
+    },
+    headerContent:{
+        color :'#fff',
+        fontSize: 20
+    }
   });

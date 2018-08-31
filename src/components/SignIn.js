@@ -4,6 +4,7 @@ import UserInput  from './UserInput';
 import SubmitButton from './SubmitButton';
 import {getMoviesFromApi,loginDataValue} from '../settings/Utility';
 import {authenticateUser} from '../settings/ApiUrls';
+import { AsyncStorage } from "react-native";
 
 export default class SignIn extends Component {
     static navigationOptions = {
@@ -14,24 +15,47 @@ export default class SignIn extends Component {
       password:''
     };
     
-    loginUser = async() => {
+    loginUser = async(email,password) => {
       try {
         let response = await fetch(authenticateUser, {
           method: 'POST',
           headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          // 'x-access-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImJoYXNrYXJqNjFAZ21haWwuY29tIiwicGFzc3dvcmQiOiIkMmEkMTAkdS9Ld3FuVERFbXhzSUFrZEI5QVJiLlVwQnEzZEppVGRWUmo5MFVHbUwvYTJQSy5yRUpQZ0ciLCJpYXQiOjE1MzU2MTY1MjMsImV4cCI6MTUzNTcwMjkyM30.j391j74Mz6ZHVtdNs2jK7OLwJsSQzWqIDYH4QKrazyY'
           },
           body: JSON.stringify({
-            email: "bhaskarj61@gmail.com",
-            password: "test1234"
+            email: email,
+            password: password
         })});
         let responseJson = await response.json();
-        this.loginDataResponse = JSON.stringify(responseJson.data);
-        // return responseJson.data;
+        if(responseJson.success){
+          console.log(responseJson);
+          let tokenValue = "";
+          console.log("Token",responseJson.token);
+          tokenValue = responseJson.token;
+          // let storageData = {
+          //   name: responseJson.data.name,
+          //   email: responseJson.data.email,
+          //   image : responseJson.data.image,
+          //   token : responseJson.token,
+          // }
+          this._storeData(tokenValue);
+          this.props.navigation.navigate('TabScreen')
+          //  alert("logged In Successfully");
+        }
+        else {
+           alert(responseJson.message);
+        }
       } catch (error) {
         console.error(error);
+      }
+    }
+    _storeData = async (userInfo) => {
+      try {
+        console.log("setItem", userInfo);
+        await AsyncStorage.setItem('userInfo', "laksh");
+      } catch (error) {
+        // Error saving data
       }
     }
     render() { 
@@ -43,11 +67,7 @@ export default class SignIn extends Component {
             <UserInput  placeholder="PASSWORD" Password = {(inputValue)=>{this.setState({password:inputValue})}}/>
          </View>
          <TouchableOpacity style={{marginTop:20}}  onPress={() => {
-            if(this.props.navigation.state.params.email===this.state.email && this.props.navigation.state.params.password===this.state.password){
-                              this.props.navigation.navigate('TabScreen');
-                            }else{
-                              Alert.alert('Wrong Email or Password');
-                            }
+                    this.loginUser(this.state.email,this.state.password);
                            }}>
           <SubmitButton buttonText="Sign In" />
          </TouchableOpacity>
