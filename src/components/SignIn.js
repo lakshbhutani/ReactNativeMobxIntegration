@@ -30,16 +30,17 @@ export default class SignIn extends Component {
         let responseJson = await response.json();
         if(responseJson.success){
           console.log(responseJson);
-          let tokenValue = "";
+          // let tokenValue = "";
           console.log("Token",responseJson.token);
-          tokenValue = responseJson.token;
-          // let storageData = {
-          //   name: responseJson.data.name,
-          //   email: responseJson.data.email,
-          //   image : responseJson.data.image,
-          //   token : responseJson.token,
-          // }
-          this._storeData(tokenValue);
+          // tokenValue = responseJson.token;
+          let storageData = {
+            name: responseJson.data.name,
+            email: responseJson.data.email,
+            image : responseJson.data.image,
+            token : responseJson.token,
+          }
+          // this._storeData(tokenValue);
+          this._storeData(JSON.stringify(storageData));
           this.props.navigation.navigate('TabScreen')
           //  alert("logged In Successfully");
         }
@@ -53,7 +54,7 @@ export default class SignIn extends Component {
     _storeData = async (userInfo) => {
       try {
         console.log("setItem", userInfo);
-        await AsyncStorage.setItem('userInfo', "laksh");
+        await AsyncStorage.setItem('userInfo', userInfo);
       } catch (error) {
         // Error saving data
       }

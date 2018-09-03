@@ -8,8 +8,8 @@ import TabbedNavigation from './components/TabbedNavigation';
 
 export const RootStack = createStackNavigator(
     {
-      Home: SignIn,
-      // Home: TabbedNavigation,
+      // Home: SignIn,
+      Home: TabbedNavigation,
       SignUpScreen: SignUp,
       ListingScreen: Card,
       TabScreen: TabbedNavigation

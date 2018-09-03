@@ -1,18 +1,60 @@
 import React, {Component} from 'react';
-import { StyleSheet, View, Text,Image,TextInput, TouchableOpacity} from 'react-native';
+import { Button, StyleSheet, View, Text,Image,TextInput, TouchableOpacity} from 'react-native';
 import SubmitButton from './SubmitButton';
-
+import ImagePicker from "react-native-image-picker";
+// import { Button } from 'react-native-elements';
 
 export default class Profile extends Component {
+    // ImagePicker = require('react-native-image-picker');
+    imagePickerOptions = {
+        title: 'Select Avatar',
+        customButtons: [
+          {name: 'fb', title: 'Choose Photo from Facebook'},
+        ],
+        storageOptions: {
+          skipBackup: true,
+          path: 'images'
+        }
+      };
     static navigationOptions = {
         title: 'Profile'
     }
+    state = {
+        pickedImage: require('../assets/images/59.jpg')
+    };
+     
+    pickImageHandler = () => {
+        console.log(ImagePicker);
+        ImagePicker.showImagePicker(this.imagePickerOptions, res => {
+          if (res.didCancel) {
+            console.log("User cancelled!");
+          } else if (res.error) {
+            console.log("Error", res.error);
+          } else {
+            console.log('Image chosen')  
+            console.log(res);
+            let source = { uri: res.uri };
+            // console.log(source)
+            // You can also display the image using data:
+            // let source = { uri: 'data:image/jpeg;base64,' + res.data };
+            this.setState({
+                pickedImage: source
+            });
+          }
+        });
+    }
+
     render() {
         return (
           <View style={{ flex: 1, alignItems: 'center' }}>
             <View style={styles.imageStyle}>
-                 <Image  style ={styles.welcome} source= {require('../assets/images/59.jpg')} />
+                 <Image  style ={styles.welcome} 
+                         source= {this.state.pickedImage} />
             </View>
+            <View>
+                <Button title="Pick Image" onPress={this.pickImageHandler} />
+            </View>
+            {/* <Button title="Pick Image" onPress={this.pickImageHandler} /> */}
             <View style={styles.detailsStyles}>
             <TextInput
                     style={styles.textInputStyles}
