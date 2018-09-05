@@ -3,4 +3,6 @@
     export const createUser = baseUrl + "/createUser";
     export const getUserList = baseUrl + "/getUserList";
     export const authenticateUser = baseUrl + "/authenticateUser";
+    export const uploadUserImage = baseUrl + "/uploadUserImage";
+
     

@@ -2,10 +2,11 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import Header from './src/components/Header';
-// import SignIn from './src/components/SignIn';
 import Routing from './src/Routing';
-// import SignUp from './src/components/SignUp';
-
+import { Provider } from 'react-redux';
+import { createStore, applyMiddleware } from 'redux';
+import reducers from './src/reducers';
+import thunk from 'redux-thunk';
 
 // const instructions = Platform.select({
 //   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -19,17 +20,13 @@ import Routing from './src/Routing';
 
 export default class App extends Component {
   render() {
+    const store = createStore(reducers, {}, applyMiddleware(thunk))
     return (
+      <Provider store = {store}>
           <Routing/>
-    );
-      // <View style={styles.container}>
-        // <Header headerTitle= {'Sign In'} />
-        {/* <SignIn /> */}
-        // <Routing><Routing/>
+      </Provider>
         
-        {/* <SignUp /> */}
-      {/* </View> */}
-    // );
+    );
   }
 }
 

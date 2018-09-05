@@ -2,54 +2,49 @@ import React, { Component } from 'react';
 import { Text, View, ScrollView,ActivityIndicator, Image, StyleSheet,FlatList,SearchBar,AsyncStorage} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {getUserList} from '../settings/ApiUrls';
+import { connect } from 'react-redux';
 
-  export default class Card extends Component {
+
+ class Card extends Component {
     state = {
         userCheckList : [],
         isLoading: true,
         pageNumber: 1,
-        // token: ""
     };
     constructor(props){
         super(props);
-        this.retrieveStorageData();
-        // this.getUserList();
+        // this.retrieveStorageData();
+        console.log("inside constructor", this.props);
+        this.getUserList(this.props.login.token);
     }
-    retrieveStorageData = async () => {
-        try {
-            // console.log('hello');
-            const value = await AsyncStorage.getItem('userInfo');
-            const valueObject = JSON.parse(value);
-            this.getUserList(valueObject.token)
-            console.log("Inside retrieve storage Data" , valueObject.token);
-            // this.setState({token: valueObject.token});
-            // this.setState({token: valueObject.token});
-            // console.log("state object",this.state);
-            // console.log("Got Token Value",valueObject);
-          if (valueObject) {
-            console.log(valueObject);
-          }
-         } catch (error) {
-             console.log('error');
-         }
-    }
+    // retrieveStorageData = async () => {
+    //     try {
+    //         const value = await AsyncStorage.getItem('userInfo');
+    //         const valueObject = JSON.parse(value);
+    //         console.log(valueObject);
+    //         console.log(valueObject.token);
+    //         this.getUserList(valueObject.token);
+    //         console.log("Inside retrieve storage Data" , valueObject.token);
+    //       if (valueObject) {
+    //         console.log(valueObject);
+    //       }
+    //      } catch (error) {
+    //          console.log('error');
+    //      }
+    // }
     getUserList = async(token) => {
 
-        console.log("x-access-token", token);
             try {
               let response = await fetch(getUserList+"/0/"+ this.state.pageNumber+"/10", {
                 method: 'GET',
                 headers: {
-                // 'x-access-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imxha3NoQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJhJDEwJDNvVkF6cHpPNmpMTE9QVEg0TkxNVHVMSjFGcld6UGthbDRaVXk3dDRLVkRkd243Rkp3NFVtIiwiaWF0IjoxNTM1OTU5MjEwLCJleHAiOjE1MzYwNDU2MTB9.M6YXfi6AE2c3-qfFVyI8FRSiMftBsNMULSorL9WjFrk'
                 'x-access-token': token
                 }
             });
               let responseJson = await response.json();
-                // this.userCheckList = responseJson.message.results;
                 this.setState({userCheckList:this.state.userCheckList.concat(responseJson.message.results),
                     isLoading: false
                 });
-                console.log(responseJson.message.results);
               return responseJson.message.results;
             } catch (error) {
               console.error(error);
@@ -65,6 +60,7 @@ import {getUserList} from '../settings/ApiUrls';
         )
       };
     render() {
+        console.log(this.props);
         if(this.state.isLoading){
             return(
                 <View style={{flex: 1, justifyContent: 'center'}}>
@@ -74,13 +70,13 @@ import {getUserList} from '../settings/ApiUrls';
         }
         else {
             return (
-                // <ScrollView styles={styles.scrollViewStyles}>
                     <FlatList
                             data={this.state.userCheckList}
                             onEndReachedThreshold = {0.7}
                             onEndReached={({ distanceFromEnd }) => {
                                 this.setState({pageNumber: ++this.state.pageNumber})
-                                this.retrieveStorageData();
+                                // this.retrieveStorageData();
+                                this.getUserList(this.props.login.token);
                             }}
                             ListHeaderComponent={this.renderHeader}
                             renderItem={({ item })=>(
@@ -95,7 +91,6 @@ import {getUserList} from '../settings/ApiUrls';
                             </View>
                         )}
                     />
-                // </ScrollView>
                         
             );
         }
@@ -191,3 +186,10 @@ const styles = StyleSheet.create({
         fontSize: 20
     }
   });
+
+  const mapStateToProps = (state) => {
+    // console.log(state);
+    return state;
+  }  
+  
+  export default connect(mapStateToProps)(Card);

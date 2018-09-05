@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
-import { Button, StyleSheet, View, Text,Image,TextInput, TouchableOpacity} from 'react-native';
+import { Button, StyleSheet, View, Text,Image,TextInput, TouchableOpacity, AsyncStorage} from 'react-native';
 import SubmitButton from './SubmitButton';
 import ImagePicker from "react-native-image-picker";
-// import { Button } from 'react-native-elements';
+import {uploadUserImage} from '../settings/ApiUrls';
+
 
 export default class Profile extends Component {
-    // ImagePicker = require('react-native-image-picker');
     imagePickerOptions = {
         title: 'Select Avatar',
         customButtons: [
@@ -19,10 +19,13 @@ export default class Profile extends Component {
     static navigationOptions = {
         title: 'Profile'
     }
-    state = {
-        pickedImage: require('../assets/images/59.jpg')
-    };
-     
+    constructor(props){
+        super(props)
+        this.state = {
+            pickedImage: {uri: 'http://192.168.12.39:7000/laksh@gmail.com.jpeg'}
+        }
+        this.retrieveStorageData();
+    }
     pickImageHandler = () => {
         console.log(ImagePicker);
         ImagePicker.showImagePicker(this.imagePickerOptions, res => {
@@ -30,21 +33,57 @@ export default class Profile extends Component {
             console.log("User cancelled!");
           } else if (res.error) {
             console.log("Error", res.error);
-          } else {
-            console.log('Image chosen')  
-            console.log(res);
-            let source = { uri: res.uri };
-            // console.log(source)
-            // You can also display the image using data:
-            // let source = { uri: 'data:image/jpeg;base64,' + res.data };
-            this.setState({
-                pickedImage: source
-            });
+          } 
+          else {
+                let source = {uri:'data:image/jpeg;base64,'+ res.data} ;
+                this.setState({
+                    pickedImage: source
+                });
           }
         });
     }
-
+    token = '';
+    userEmail = '';
+    retrieveStorageData = async () => {
+        console.log('Inside retrieve storage');
+        try {
+            console.log('inside Try');
+            const value = await AsyncStorage.getItem('userInfo');
+            const valueObject = JSON.parse(value);
+            console.log(valueObject);
+            this.token = valueObject.token;
+            this.userEmail = valueObject.email;
+            let userImage = {uri:"http://192.168.12.39:7000/"+valueObject.image};
+            this.setState({pickedImage: userImage})
+            console.log("Value object",valueObject);
+        }
+        catch (error) {
+                console.log('error');
+        }
+    }
+    updateImage = async() => {
+        console.log('hello')
+        console.log(this.token,this.userEmail);
+        console.log(this.state.pickedImage.uri);
+            try {
+              let response = await fetch(uploadUserImage, {
+                method: 'POST',
+                headers: {
+                'x-access-token': this.token,
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: this.userEmail,
+                    image : this.state.pickedImage.uri
+                })
+            });
+            }
+            catch (error) {
+              console.error(error);
+            }
+    }
     render() {
+        console.log("My state",this.state);
         return (
           <View style={{ flex: 1, alignItems: 'center' }}>
             <View style={styles.imageStyle}>
@@ -54,7 +93,6 @@ export default class Profile extends Component {
             <View>
                 <Button title="Pick Image" onPress={this.pickImageHandler} />
             </View>
-            {/* <Button title="Pick Image" onPress={this.pickImageHandler} /> */}
             <View style={styles.detailsStyles}>
             <TextInput
                     style={styles.textInputStyles}
@@ -73,7 +111,8 @@ export default class Profile extends Component {
                 />
             </View>
             <View>
-            <TouchableOpacity style={{marginTop:20}}>
+            <TouchableOpacity   style={{marginTop:20}}
+                                onPress={() => {this.updateImage()}} >
                 <SubmitButton  buttonText="Save" />
             </TouchableOpacity>
             </View>
@@ -83,7 +122,9 @@ export default class Profile extends Component {
 }
 const styles = StyleSheet.create({
     welcome:{
-        borderRadius: 100
+        borderRadius: 100,
+        height: 120,
+        width: 120
     },
     textInputStyles: {
         height : 50,
