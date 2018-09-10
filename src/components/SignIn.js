@@ -7,8 +7,11 @@ import {authenticateUser} from '../settings/ApiUrls';
 import { AsyncStorage } from "react-native";
 import { connect } from 'react-redux';
 import { loginUser,loginUserAction } from '../actions';
+import { inject, observer } from 'mobx-react';
 
-class SignIn extends Component {
+@inject('authStore')
+@observer
+export default class SignIn extends Component {
     static navigationOptions = {
        title: 'Sign In',
     };
@@ -16,14 +19,14 @@ class SignIn extends Component {
       name:'',
       password:''
     };
-    shouldComponentUpdate(nextProps, nextState){
-      console.log("Next Props",nextProps);
-      if(this.props.login.token){
-         this.props.navigation.navigate('TabScreen');
-      }
-      console.log("Next State", nextState);
-      return true;
-    }
+    // shouldComponentUpdate(nextProps, nextState){
+    //   console.log("Next Props",nextProps);
+    //   // if(this.props.login.token){
+    //   //    this.props.navigation.navigate('TabScreen');
+    //   // }
+    //   console.log("Next State", nextState);
+    //   return true;
+    // }
     // loginUser = async(email,password) => {
     //   try {
     //     let response = await fetch(authenticateUser, {
@@ -63,35 +66,47 @@ class SignIn extends Component {
     //     // Error saving data
     //   }
     // }
+    loginUser = (props) => {
+      console.log(props);
+      props.authStore.loginUser(this.state.email,this.state.password);
+      console.log(props.authStore.userInfo.email);
+      if(props.authStore.userInfo.email){
+        props.navigation.navigate('TabScreen')
+      }
+      // props.authStore.loginUser(this.state.email,this.state.password);
+    }
     render() {
+      // console.warn(this.props);
       console.log(this.props);
-      return (
-        <View style= {styles.container}>
-          <Image  style ={styles.welcome} source= {require('../assets/images/projectdesign.png')} />
-          <View style={{marginTop:35}}>
-              <UserInput  placeholder="EMAIL" Email = {(inputValue)=>{this.setState({email:inputValue})}} />
-              <UserInput  placeholder="PASSWORD" Password = {(inputValue)=>{this.setState({password:inputValue})}}/>
+        return (
+          <View style= {styles.container}>
+            <Image  style ={styles.welcome} source= {require('../assets/images/projectdesign.png')} />
+            <View style={{marginTop:35}}>
+                <UserInput  placeholder="EMAIL" Email = {(inputValue)=>{this.setState({email:inputValue})}} />
+                <UserInput  placeholder="PASSWORD" Password = {(inputValue)=>{this.setState({password:inputValue})}}/>
+            </View>
+            <TouchableOpacity style={{marginTop:20}}  
+                              onPress={() => {
+                                // this.props.loginUser(this.state.email,this.state.password);
+                                // this.props.authStore.loginUser(this.state.email,this.state.password);
+                                this.loginUser(this.props);
+                              }}>
+              <SubmitButton buttonText="Sign In" />
+            </TouchableOpacity>
+            <View style={{flex:1, justifyContent:'space-between'}}>
+                <View>
+                    <Text style={styles.forgotLinkText}>Forgot your Details?</Text>              
+                </View>
+                <TouchableOpacity style = {styles.createNewAccountButton}
+                                  onPress={() => {
+                                  this.props.navigation.navigate('SignUpScreen')}}>
+                  <Text>
+                    Create a new Account
+                  </Text>
+                </TouchableOpacity>
+            </View>
           </View>
-          <TouchableOpacity style={{marginTop:20}}  
-                            onPress={() => {
-                              this.props.loginUser(this.state.email,this.state.password);
-                            }}>
-            <SubmitButton buttonText="Sign In" />
-          </TouchableOpacity>
-          <View style={{flex:1, justifyContent:'space-between'}}>
-              <View>
-                  <Text style={styles.forgotLinkText}>Forgot your Details?</Text>              
-              </View>
-              <TouchableOpacity style = {styles.createNewAccountButton}
-                                onPress={() => {
-                                this.props.navigation.navigate('SignUpScreen')}}>
-                <Text>
-                  Create a new Account
-                </Text>
-              </TouchableOpacity>
-          </View>
-        </View>
-      );
+        );
   }
 }
 const styles = StyleSheet.create({
@@ -118,9 +133,9 @@ const styles = StyleSheet.create({
     }
   });
 
-const mapStateToProps = (state) => {
-  console.log(state);
-  return state;
-}  
+// const mapStateToProps = (state) => {
+//   console.log(state);
+//   return state;
+// }  
 
-export default connect(mapStateToProps, {loginUser})(SignIn);
+// export default connect(mapStateToProps, {loginUser})(SignIn);

@@ -3,9 +3,14 @@ import { Button, StyleSheet, View, Text,Image,TextInput, TouchableOpacity, Async
 import SubmitButton from './SubmitButton';
 import ImagePicker from "react-native-image-picker";
 import {uploadUserImage} from '../settings/ApiUrls';
+import { inject, observer } from 'mobx-react';
 
+
+@inject('authStore')
+@observer
 
 export default class Profile extends Component {
+    profileUserName = '';
     imagePickerOptions = {
         title: 'Select Avatar',
         customButtons: [
@@ -22,9 +27,13 @@ export default class Profile extends Component {
     constructor(props){
         super(props)
         this.state = {
-            pickedImage: {uri: 'http://192.168.12.39:7000/laksh@gmail.com.jpeg'}
+            pickedImage: {uri: 'http://192.168.12.39:7000/laksh@gmail.com.jpeg'},
+            // name: ''
         }
         this.retrieveStorageData();
+        this.profileUserName  = this.props.authStore.userName;
+        // console.log("Inside Profile",this.props.authStore.userName)
+        // this.setState({userName: this.props.authStore.userName});
     }
     pickImageHandler = () => {
         console.log(ImagePicker);
@@ -84,6 +93,7 @@ export default class Profile extends Component {
     }
     render() {
         console.log("My state",this.state);
+        console.log()
         return (
           <View style={{ flex: 1, alignItems: 'center' }}>
             <View style={styles.imageStyle}>
@@ -96,12 +106,13 @@ export default class Profile extends Component {
             <View style={styles.detailsStyles}>
             <TextInput
                     style={styles.textInputStyles}
-                    value="Jennifier Lopez"
-                    editable = {false}
+                    value = { this.props.authStore.userName }
+                    onChangeText = { (value) => this.props.authStore.updateName(value) }
+                    editable = {true}
                 />
              <TextInput
                     style={styles.textInputStyles}
-                    value="jennifier@gmail.com"
+                    value={this.props.authStore.userInfo.email}
                     editable = {false}
                  />
              <TextInput
@@ -112,7 +123,10 @@ export default class Profile extends Component {
             </View>
             <View>
             <TouchableOpacity   style={{marginTop:20}}
-                                onPress={() => {this.updateImage()}} >
+                                onPress={() => {
+                                    this.updateImage();
+                                    // this.props.authStore.loginUser(this.state.email,this.state.password);
+                                    }} >
                 <SubmitButton  buttonText="Save" />
             </TouchableOpacity>
             </View>

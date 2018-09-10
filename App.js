@@ -3,11 +3,20 @@ import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import Header from './src/components/Header';
 import Routing from './src/Routing';
-import { Provider } from 'react-redux';
-import { createStore, applyMiddleware } from 'redux';
-import reducers from './src/reducers';
-import thunk from 'redux-thunk';
+// import { Provider } from 'react-redux';
+// import { createStore, applyMiddleware } from 'redux';
+// import reducers from './src/reducers';
+// import thunk from 'redux-thunk';
 
+// Mobx Integration
+
+import { Provider } from 'mobx-react'
+import AuthStore from './src/mobx/AuthStore';
+const authStore = new AuthStore();
+
+const stores  = {
+  authStore
+}
 // const instructions = Platform.select({
 //   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
 //   android:
@@ -20,14 +29,21 @@ import thunk from 'redux-thunk';
 
 export default class App extends Component {
   render() {
-    const store = createStore(reducers, {}, applyMiddleware(thunk))
     return (
-      <Provider store = {store}>
-          <Routing/>
+      <Provider {...stores}>
+        <Routing />
       </Provider>
-        
-    );
+    )
   }
+  // render() {
+  //   const store = createStore(reducers, {}, applyMiddleware(thunk))
+  //   return (
+  //     <Provider store = {store}>
+  //         <Routing/>
+  //     </Provider>
+        
+  //   );
+  // }
 }
 
 const styles = StyleSheet.create({

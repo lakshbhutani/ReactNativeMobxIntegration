@@ -2,11 +2,18 @@ import React, {Component} from 'react';
 import { StyleSheet, View, Text, Image, TextInput, Switch} from 'react-native';
 import { CheckBox } from 'react-native-elements';
 import { Slider } from 'react-native-elements'
+import { inject, observer } from 'mobx-react';
 
 
+@inject('authStore')
+@observer
 export default class Settings extends Component {
     static navigationOptions = {
         title: 'Settings'
+    }
+    constructor(props){
+        super(props);
+        console.log('Inside Settings Tab', props);
     }
     state = {
         switch1Value: false,
@@ -15,9 +22,15 @@ export default class Settings extends Component {
         newsLetterRadioButtonChecked: false,
         sliderValue: 50,
     };
+    
     render() {
         return (
           <View style={styles.settingsContainer}>
+            <View style= {styles.cardListingHeader}>
+                <Text></Text>
+                <Text style= {styles.headerContent}>{this.props.authStore.userName}</Text>
+                <Text></Text>
+            </View>
             <View style={styles.listItem}>
                 <Text style={styles.settingItem}>Mobile Data</Text>
                 <View>
@@ -121,5 +134,20 @@ const styles = StyleSheet.create({
         borderBottomWidth: 2,
         borderBottomColor: '#E6E8EA',
         justifyContent:'center',
-   }
+   },
+   cardListingHeader: {
+        flexDirection : 'row',
+        // flex: 1,
+        backgroundColor: '#E67263',
+        paddingTop: 15,
+        paddingBottom: 15,
+        justifyContent: 'space-between',
+        marginBottom: 5,
+        paddingLeft: 10,
+        paddingRight: 10
+    },
+    headerContent:{
+        color :'#fff',
+        fontSize: 20
+    }
 });

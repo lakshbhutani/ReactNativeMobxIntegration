@@ -1,11 +1,18 @@
+// import { fetchResource } from '../settings/Utility';
+import NetworkOps from '../settings/Utility';
 import React, { Component } from 'react';
 import { Text, View, ScrollView,ActivityIndicator, Image, StyleSheet,FlatList,SearchBar,AsyncStorage} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {getUserList} from '../settings/ApiUrls';
 import { connect } from 'react-redux';
+import { inject, observer } from 'mobx-react';
 
 
- class Card extends Component {
+@inject('authStore')
+@observer
+ export default class Card extends Component {
+    list = []
+    networkOps = new NetworkOps();
     state = {
         userCheckList : [],
         isLoading: true,
@@ -13,43 +20,19 @@ import { connect } from 'react-redux';
     };
     constructor(props){
         super(props);
-        // this.retrieveStorageData();
-        console.log("inside constructor", this.props);
-        this.getUserList(this.props.login.token);
-    }
-    // retrieveStorageData = async () => {
-    //     try {
-    //         const value = await AsyncStorage.getItem('userInfo');
-    //         const valueObject = JSON.parse(value);
-    //         console.log(valueObject);
-    //         console.log(valueObject.token);
-    //         this.getUserList(valueObject.token);
-    //         console.log("Inside retrieve storage Data" , valueObject.token);
-    //       if (valueObject) {
-    //         console.log(valueObject);
-    //       }
-    //      } catch (error) {
-    //          console.log('error');
-    //      }
-    // }
-    getUserList = async(token) => {
-
-            try {
-              let response = await fetch(getUserList+"/0/"+ this.state.pageNumber+"/10", {
-                method: 'GET',
-                headers: {
-                'x-access-token': token
-                }
-            });
-              let responseJson = await response.json();
-                this.setState({userCheckList:this.state.userCheckList.concat(responseJson.message.results),
-                    isLoading: false
-                });
-              return responseJson.message.results;
-            } catch (error) {
-              console.error(error);
+        // this.getUserList(this.props.authStore.userInfo.token);
+        // this.networkOps.getUsersList(this.props.authStore.userInfo.token);
+        // this.getUserList();
+        console.log(this.networkOps);
+        this.networkOps.fetchResource(getUserList, {
+            method : 'GET',
+            headers : {
+              "x-access-token" : this.props.authStore.userInfo.token
             }
+          }).then(resp=> {
+                this.setState({ userCheckList: resp.message.results,isLoading:false });});
     }
+   
     renderHeader = () => {
         return (
             <View style= {styles.cardListingHeader}>
@@ -75,8 +58,13 @@ import { connect } from 'react-redux';
                             onEndReachedThreshold = {0.7}
                             onEndReached={({ distanceFromEnd }) => {
                                 this.setState({pageNumber: ++this.state.pageNumber})
-                                // this.retrieveStorageData();
-                                this.getUserList(this.props.login.token);
+                                this.networkOps.fetchResource(getUserList, {
+                                            method : 'GET',
+                                            headers : {
+                                            "x-access-token" : this.props.authStore.userInfo.token
+                                            }
+                                        }).then(resp=> {
+                                                this.setState({ userCheckList: resp.message.results,isLoading:false });});
                             }}
                             ListHeaderComponent={this.renderHeader}
                             renderItem={({ item })=>(
@@ -187,9 +175,9 @@ const styles = StyleSheet.create({
     }
   });
 
-  const mapStateToProps = (state) => {
-    // console.log(state);
-    return state;
-  }  
+//   const mapStateToProps = (state) => {
+//     // console.log(state);
+//     return state;
+//   }  
   
-  export default connect(mapStateToProps)(Card);
+//   export default connect(mapStateToProps)(Card);
